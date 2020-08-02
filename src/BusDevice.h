@@ -6,18 +6,18 @@ public:
   BusDevice();
   ~BusDevice();
 
-  // Returns -1 if error, otherwise returns the number of byte read.
+  // Returns -1 if error, otherwise returns the number of read byte.
   size_t read8FromRegister(uint8_t *value, uint8_t registerValue) __attribute__((warn_unused_result));
-  // Returns -1 if error, otherwise returns the number of byte read.
+  // Returns -1 if error, otherwise returns the number of read byte.
   size_t read16FromRegister(uint16_t *value, uint8_t registerValue) __attribute__((warn_unused_result));
-  // Returns -1 if error, otherwise returns the number of byte written.
+  // Returns -1 if error, otherwise returns the number of written byte.
   size_t write8FromRegister(uint8_t value, uint8_t registerValue) __attribute__((warn_unused_result));
-  // Returns -1 if error, otherwise returns the number of byte written.
+  // Returns -1 if error, otherwise returns the number of written byte.
   size_t write16FromRegister(uint16_t value, uint8_t registerValue) __attribute__((warn_unused_result));
 
-  // Returns -1 if error, otherwise returns the number of byte read.
+  // Returns -1 if error, otherwise returns the number of read byte.
   virtual size_t readBuffer(uint8_t *values, size_t size, bool endTransmission = true) = 0 __attribute__((warn_unused_result));
-  // Returns -1 if error, otherwise returns the number of byte written.
+  // Returns -1 if error, otherwise returns the number of written byte.
   virtual size_t writeBuffer(uint8_t *values, size_t size, bool endTransmission = true) = 0 __attribute__((warn_unused_result))s;
 };
 
