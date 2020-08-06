@@ -75,9 +75,6 @@ size_t BusDevice::readBufferFromRegister(uint8_t *value, size_t size, uint8_t re
 }
 
 size_t BusDevice::write8ToRegister(uint8_t value, uint8_t registerValue) {
-  if (!value) {
-    return 0;
-  }
   if (writeBuffer(&registerValue, sizeof(registerValue), false) != sizeof(registerValue)) {
     return -1;
   }
