@@ -13,6 +13,7 @@ public:
 
   size_t readBuffer(uint8_t *values, size_t size, bool endTransmission = true) override __attribute__((warn_unused_result));
   size_t writeBuffer(const uint8_t *values, size_t size, bool endTransmission = true) override __attribute__((warn_unused_result));
+  size_t writeBufferToRegister(const uint8_t *values, size_t size, uint8_t registerValue) __attribute__((warn_unused_result));
 
   TwoWire *getWire() { return _wire; };
 

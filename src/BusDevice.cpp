@@ -1,5 +1,7 @@
 #include "BusDevice.h"
 
+#define PRINT_DATA 0
+
 namespace {
 
 inline bool inverseBufferWithEndianness(BusDevice::Endianness endianness) {
@@ -28,6 +30,13 @@ void inverseUInt16ArrayIfNeeded(uint16_t *array, size_t size, BusDevice::Endiann
   }
 }
 
+void printOneByte(uint8_t byte) {
+  if (byte < 0x10) {
+    Serial.print("0");
+  }
+  Serial.print(byte, HEX);
+}
+
 }  // namespace
 
 BusDevice::BusDevice(Endianness endianness) :
@@ -38,13 +47,7 @@ BusDevice::~BusDevice() {
 }
 
 size_t BusDevice::read8FromRegister(uint8_t *value, uint8_t registerValue) {
-  if (!value) {
-    return 0;
-  }
-  if (writeBuffer(&registerValue, sizeof(registerValue), false) != sizeof(registerValue)) {
-    return -1;
-  }
-  return readBuffer(value, sizeof(*value));
+  return readBufferFromRegister(value, sizeof(*value), registerValue);
 }
 
 size_t BusDevice::read16FromRegister(uint16_t *value, uint8_t registerValue) {
@@ -55,30 +58,14 @@ size_t BusDevice::readArray16FromRegister(uint16_t *values, size_t size, uint8_t
   if (!values) {
     return 0;
   }
-  if (writeBuffer(&registerValue, sizeof(registerValue), false) != sizeof(registerValue)) {
-    return -1;
-  }
   size_t bufferSize = size * sizeof(*values);
-  size_t readCount = readBuffer((uint8_t *)values, bufferSize);
+  size_t readCount = readBufferFromRegister((uint8_t *)values, bufferSize, registerValue);
   inverseUInt16ArrayIfNeeded(values, bufferSize, _endianness);
   return readCount;
 }
 
-size_t BusDevice::readBufferFromRegister(uint8_t *value, size_t size, uint8_t registerValue) {
-  if (!value) {
-    return 0;
-  }
-  if (writeBuffer(&registerValue, sizeof(registerValue), false) != sizeof(registerValue)) {
-    return -1;
-  }
-  return readBuffer(value, size);
-}
-
 size_t BusDevice::write8ToRegister(uint8_t value, uint8_t registerValue) {
-  if (writeBuffer(&registerValue, sizeof(registerValue), false) != sizeof(registerValue)) {
-    return -1;
-  }
-  return writeBuffer(&value, sizeof(value));
+  return writeBufferToRegister(&value, sizeof(value), registerValue);
 }
 
 size_t BusDevice::write16ToRegister(uint16_t value, uint8_t registerValue) {
@@ -89,14 +76,11 @@ size_t BusDevice::writeArray16ToRegister(uint16_t *values, size_t size, uint8_t 
   if (!values) {
     return 0;
   }
-  if (writeBuffer(&registerValue, sizeof(registerValue), false) != sizeof(registerValue)) {
-    return -1;
-  }
   size_t bufferSize = size * sizeof(*values);
   uint16_t *buffer = (uint16_t *)malloc(bufferSize);
   memcpy(buffer, values, bufferSize);
   inverseUInt16ArrayIfNeeded(buffer, size, _endianness);
-  size_t writeCount = writeBuffer((uint8_t *)buffer, bufferSize);
+  size_t writeCount = writeBufferToRegister((uint8_t *)buffer, bufferSize, registerValue);
   free(buffer);
   return writeCount;
 }
@@ -121,4 +105,48 @@ size_t BusDevice::write8(uint8_t value, bool endTransmission) {
 size_t BusDevice::write16(uint16_t value, bool endTransmission) {
   __typeof__(value) endianValue = inversUInt16IfNeeded(value, _endianness);
   return writeBuffer((uint8_t *)&endianValue, sizeof(endianValue), endTransmission);
+}
+
+size_t BusDevice::readBufferFromRegister(uint8_t *value, size_t size, uint8_t registerValue) {
+  if (!value) {
+    return 0;
+  }
+  if (writeBuffer(&registerValue, sizeof(registerValue), false) != sizeof(registerValue)) {
+    return -1;
+  }
+  size_t readCount = readBuffer(value, size);
+#if PRINT_DATA
+  Serial.print("Read from address: 0x");
+  printOneByte(registerValue);
+  Serial.print(", received: ");
+  for (size_t ii = 0; ii < readCount; ++ii) {
+    printOneByte((uint8_t)value[ii]);
+  }
+  Serial.println(" ");
+#endif
+  return readCount;
+}
+
+size_t BusDevice::writeBufferToRegister(const uint8_t *values, size_t size, uint8_t registerValue) {
+  if (!values) {
+    return 0;
+  }
+  if (writeBuffer(&registerValue, sizeof(registerValue), false) != sizeof(registerValue)) {
+    return -1;
+  }
+  size_t writeCount = writeBuffer(values, size);
+#if PRINT_DATA
+  Serial.print("Write to address: 0x");
+  printOneByte(registerValue);
+  Serial.print(", buffer size: ");
+  Serial.print(size);
+  Serial.print(", write count: ");
+  Serial.print(writeCount);
+  Serial.print(", written : ");
+  for (size_t ii = 0; ii < writeCount; ++ii) {
+    printOneByte((uint8_t)values[ii]);
+  }
+  Serial.println(" ");
+#endif
+  return writeCount;
 }

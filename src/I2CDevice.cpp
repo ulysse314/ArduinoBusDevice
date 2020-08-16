@@ -86,3 +86,37 @@ size_t I2CDevice::writeBuffer(const uint8_t *values, size_t size, bool endTransm
 #endif
   return noError ? writeCount : -1;
 }
+
+size_t I2CDevice::writeBufferToRegister(const uint8_t *values, size_t size, uint8_t registerValue) {
+  if (!values || !_wire) {
+#if PRINT_DATA
+    Serial.println("No data or no wire to write");
+#endif
+    return -1;
+  }
+  _wire->beginTransmission(_address);
+  if (_wire->write(registerValue) != sizeof(registerValue)) {
+    _wire->endTransmission();
+    return -1;
+  }
+  size_t writeCount = _wire->write(values, size);
+#if PRINT_DATA
+  Serial.print("Write to 0x");
+  printOneByte(_address);
+  Serial.print(", ");
+  Serial.print(size);
+  Serial.print(" data to write, ");
+  Serial.println(writeCount);
+#endif
+  bool noError = (_wire->endTransmission() == 0);
+#if PRINT_DATA
+  Serial.print(", no error: ");
+  Serial.print(noError ? "true" : "false");
+  Serial.print(", sent: ");
+  for (size_t ii = 0; ii < size; ++ii) {
+    printOneByte(values[ii]);
+  }
+  Serial.println(" ");
+#endif
+  return noError ? writeCount : -1;
+}
