@@ -30,12 +30,14 @@ void inverseUInt16ArrayIfNeeded(uint16_t *array, size_t size, BusDevice::Endiann
   }
 }
 
+#if PRINT_DATA
 void printOneByte(uint8_t byte) {
   if (byte < 0x10) {
     Serial.print("0");
   }
   Serial.print(byte, HEX);
 }
+#endif  // PRINT_DATA
 
 }  // namespace
 

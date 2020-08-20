@@ -12,8 +12,8 @@ void printOneByte(uint8_t byte) {
   Serial.print(byte, HEX);
 }
 
-}
-#endif
+}  // namespace
+#endif  // PRINT_DATA
 
 I2CDevice::I2CDevice(uint8_t address, TwoWire *wire, BusDevice::Endianness endianness) :
     BusDevice(endianness),
