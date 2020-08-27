@@ -103,10 +103,12 @@ size_t I2CDevice::writeBufferToRegister(const uint8_t *values, size_t size, uint
 #if PRINT_DATA
   Serial.print("Write to 0x");
   printOneByte(_address);
-  Serial.print(", ");
+  Serial.print(", to register: 0x");
+  Serial.print(registerValue, HEX);
+  Serial.print(", size: ");
   Serial.print(size);
-  Serial.print(" data to write, ");
-  Serial.println(writeCount);
+  Serial.print(", written: ");
+  Serial.print(writeCount);
 #endif
   bool noError = (_wire->endTransmission() == 0);
 #if PRINT_DATA
